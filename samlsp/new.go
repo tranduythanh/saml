@@ -6,6 +6,7 @@ import (
 	"crypto/x509"
 	"net/http"
 	"net/url"
+	"strings"
 
 	dsig "github.com/russellhaering/goxmldsig"
 
@@ -14,6 +15,7 @@ import (
 
 // Options represents the parameters for creating a new middleware
 type Options struct {
+	URLSubPath            string
 	EntityID              string
 	URL                   url.URL
 	Key                   *rsa.PrivateKey
@@ -91,9 +93,10 @@ func DefaultRequestTracker(opts Options, serviceProvider *saml.ServiceProvider) 
 // DefaultServiceProvider returns the default saml.ServiceProvider for the provided
 // options.
 func DefaultServiceProvider(opts Options) saml.ServiceProvider {
-	metadataURL := opts.URL.ResolveReference(&url.URL{Path: "saml/metadata"})
-	acsURL := opts.URL.ResolveReference(&url.URL{Path: "saml/acs"})
-	sloURL := opts.URL.ResolveReference(&url.URL{Path: "saml/slo"})
+	prePath := strings.TrimRight(opts.URLSubPath, "/") + "/"
+	metadataURL := opts.URL.ResolveReference(&url.URL{Path: prePath + "saml/metadata"})
+	acsURL := opts.URL.ResolveReference(&url.URL{Path: prePath + "saml/acs"})
+	sloURL := opts.URL.ResolveReference(&url.URL{Path: prePath + "saml/slo"})
 
 	var forceAuthn *bool
 	if opts.ForceAuthn {
